@@ -1,0 +1,24 @@
+{
+  "name": "sui-legacy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Decentralized Dead Man's Switch Protocol on Sui",
+  "scripts": {
+    "dev": "npm run dev --prefix apps/web",
+    "build": "npm run build --prefix apps/web",
+    "build:contract": "cd apps/contract && sui move build",
+    "test:contract": "cd apps/contract && sui move test"
+  },
+  "keywords": [
+    "sui",
+    "blockchain",
+    "inheritance",
+    "dead-mans-switch",
+    "crypto"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
