@@ -12,7 +12,6 @@
   "dependencies": {
     "@mysten/dapp-kit": "^0.14.0",
     "@mysten/walrus": "^0.2.2",
-    "@mysten/walrus-wasm": "^0.2.2",
     "@mysten/sui": "^1.0.0",
     "@radix-ui/react-toast": "^1.2.15",
     "@tanstack/react-query": "^5.0.0",
