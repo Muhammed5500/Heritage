@@ -1,14 +1,17 @@
-/// SuiLegacy Vault Module
+/// Heritage Vault Module
 /// 
 /// Manages the Dead Man's Switch vault logic with time-based verification.
 /// Sui Move 2024 Edition
-module suilegacy::vault {
+module heritage::vault {
     use std::string::String;
+    use std::vector;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
     use sui::clock::Clock;
     use sui::sui::SUI;
     use sui::event;
+    use sui::object;
+    use sui::transfer;
 
     // ============ Error Codes ============
     const ENotOwner: u64 = 0;
@@ -34,6 +37,13 @@ module suilegacy::vault {
         owner: address,
         beneficiary: address,
         unlock_time_ms: u64,
+    }
+
+    /// Emitted when owner cancels and withdraws funds
+    public struct VaultCancelled has copy, drop {
+        vault_id: ID,
+        owner: address,
+        amount: u64,
     }
 
     /// Emitted when owner sends heartbeat
@@ -191,6 +201,49 @@ module suilegacy::vault {
             shares: vault.locked_shares,
             amount,
         });
+    }
+
+    /// Owner can cancel the legacy, withdraw funds, and destroy the vault
+    public entry fun cancel_legacy(
+        vault: LegacyBox,
+        ctx: &mut TxContext,
+    ) {
+        let sender = ctx.sender();
+        let vault_id = object::id(&vault);
+
+        // Destructure (consumes the shared object) and verify owner
+        let LegacyBox {
+            id,
+            owner,
+            beneficiary: _,
+            unlock_time_ms: _,
+            last_heartbeat: _,
+            encrypted_blob_id: _,
+            locked_shares: _,
+            balance,
+        } = vault;
+
+        assert!(sender == owner, ENotOwner);
+
+        // Convert balance to coin and transfer back to owner
+        let amount = balance.value();
+        if (amount > 0) {
+            let payment = coin::from_balance(balance, ctx);
+            transfer::public_transfer(payment, sender);
+        } else {
+            // Balance zero; still need to drop
+            balance::destroy_zero(balance);
+        };
+
+        // Emit cancellation event
+        event::emit(VaultCancelled {
+            vault_id,
+            owner,
+            amount,
+        });
+
+        // Delete the UID to finalize destruction
+        object::delete(id);
     }
 
     /// Owner can add more SUI to the vault

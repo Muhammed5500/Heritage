@@ -15,8 +15,8 @@ interface NetworkConfig {
   walrusAggregator: string;
 }
 
-// Deployed contract package ID
-const PACKAGE_ID = '0x9f743e354e06bd1b358190b94e5ae5ab670512a314f7d12b4dd26514f94a3a73';
+// Deployed contract package ID (latest publish)
+const PACKAGE_ID = '0x70c3b603ac8b7b75f35be375a96ac141ae0550a393911a78dbf2528f8be5ed75';
 
 const NETWORK_CONFIGS: Record<NetworkType, NetworkConfig> = {
   devnet: {

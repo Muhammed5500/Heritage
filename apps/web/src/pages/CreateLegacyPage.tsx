@@ -108,8 +108,8 @@ export function CreateLegacyPage() {
       const heirKeyPair = generateKeyPair();
       // Persist demo keypair so heir can reuse
       try {
-        localStorage.setItem('suilegacy_demo_secret', heirKeyPair.secretKey);
-        localStorage.setItem('suilegacy_demo_public', heirKeyPair.publicKey);
+        localStorage.setItem('heritage_demo_secret', heirKeyPair.secretKey);
+        localStorage.setItem('heritage_demo_public', heirKeyPair.publicKey);
         setDemoSecretKey(heirKeyPair.secretKey);
       } catch (e) {
         console.warn('Could not persist demo keys', e);

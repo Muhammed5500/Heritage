@@ -154,7 +154,7 @@ export async function uploadBlob(
       owner: options.owner,
       deletable: false,
     });
-
+      
     const { digest } = await options.signer({ transaction: registerTx });
 
     await flow.upload({ digest });
@@ -166,15 +166,15 @@ export async function uploadBlob(
     const first = files?.[0];
     if (first?.blobId) {
       console.log('[Walrus] ✓ Blob created via SDK');
-      return {
+        return {
         blobId: first.blobId,
-        isNewlyCreated: true,
-        isMock: false,
-      };
-    }
+          isNewlyCreated: true,
+          isMock: false,
+        };
+      }
 
     throw new Error('Unexpected response: no blobId returned from Walrus SDK');
-  } catch (err) {
+    } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Walrus upload failed: ${msg}`);
   }

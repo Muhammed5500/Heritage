@@ -40,7 +40,7 @@ function assert(condition: boolean, message: string) {
   }
 }
 
-console.log(`\n${BOLD}🔐 SuiLegacy Crypto Engine Tests${RESET}\n`);
+console.log(`\n${BOLD}🔐 Heritage Crypto Engine Tests${RESET}\n`);
 
 // ============================================================
 // MODULE 1: AES Encryption Tests

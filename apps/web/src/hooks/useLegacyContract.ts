@@ -1,6 +1,6 @@
 /**
  * Legacy Contract Hook
- * Handles all interactions with the SuiLegacy smart contract
+ * Handles all interactions with the Heritage smart contract
  */
 
 import { useCallback } from 'react';
@@ -118,6 +118,32 @@ export function useLegacyContract() {
         arguments: [
           tx.object(vaultId),
           tx.object(CLOCK_ID),
+        ],
+      });
+
+      const result = await signAndExecute({
+        transaction: tx as never,
+      });
+
+      return result;
+    },
+    [account, packageId, signAndExecute]
+  );
+
+  /**
+   * Cancel legacy and withdraw funds (owner only)
+   */
+  const cancelLegacy = useCallback(
+    async (vaultId: string) => {
+      if (!account) throw new Error('Wallet not connected');
+
+      const { Transaction } = await import('@mysten/sui/transactions');
+      const tx = new Transaction();
+
+      tx.moveCall({
+        target: `${packageId}::${MODULE_NAME}::cancel_legacy`,
+        arguments: [
+          tx.object(vaultId),
         ],
       });
 
@@ -329,6 +355,7 @@ export function useLegacyContract() {
     createVault,
     sendHeartbeat,
     claimLegacy,
+    cancelLegacy,
     addFunds,
     getVault,
     getOwnedVaults,

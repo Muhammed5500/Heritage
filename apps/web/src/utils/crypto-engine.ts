@@ -1,5 +1,5 @@
 /**
- * SuiLegacy Cryptography Engine
+ * Heritage Cryptography Engine
  * 
  * Pure TypeScript functions for encryption, secret sharing, and asymmetric encryption.
  * No React hooks - just pure functions.

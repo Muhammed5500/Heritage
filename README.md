@@ -1,4 +1,4 @@
-# 🛡️ SuiLegacy
+# 🛡️ Heritage
 
 **Decentralized Dead Man's Switch Protocol on Sui**
 
@@ -7,7 +7,7 @@ A secure inheritance mechanism that transfers crypto assets and sensitive secret
 ## 🏗️ Project Structure
 
 ```
-sui-legacy/
+heritage/
 ├── apps/
 │   ├── contract/          # Sui Move smart contract
 │   │   ├── sources/
@@ -51,7 +51,7 @@ pnpm test:contract
 
 ## 🔐 How It Works
 
-SuiLegacy uses **Shamir's Secret Sharing (5-3 scheme)** combined with **asymmetric encryption** to create a trustless inheritance system:
+Heritage uses **Shamir's Secret Sharing (5-3 scheme)** combined with **asymmetric encryption** to create a trustless inheritance system:
 
 1. **Secret Encryption**: Your secret is AES encrypted client-side
 2. **Key Splitting**: The AES key is split into 5 shares (any 3 can reconstruct)

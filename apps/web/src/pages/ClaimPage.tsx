@@ -71,7 +71,7 @@ export function ClaimPage() {
   // Load stored demo secret (if user used demo keypair during creation)
   useEffect(() => {
     try {
-      const secret = localStorage.getItem('suilegacy_demo_secret');
+      const secret = localStorage.getItem('heritage_demo_secret');
       if (secret) {
         setStoredDemoSecret(secret);
       }

@@ -15,9 +15,11 @@ import {
   Loader2,
   AlertTriangle,
   RefreshCw,
+  Trash2,
+  Copy,
 } from 'lucide-react';
 import { useLegacyContract } from '@/hooks/useLegacyContract';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface VaultCard {
   id: string;
@@ -30,13 +32,16 @@ interface VaultCard {
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate();
   const account = useCurrentAccount();
-  const { getOwnedVaults, sendHeartbeat, packageId } = useLegacyContract();
+  const { getOwnedVaults, sendHeartbeat, cancelLegacy, packageId } = useLegacyContract();
 
   const [vaults, setVaults] = useState<VaultCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [heartbeatLoading, setHeartbeatLoading] = useState<string | null>(null);
+  const [cancelLoading, setCancelLoading] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const loadVaults = async () => {
     if (!account) return;
@@ -44,11 +49,13 @@ export function DashboardPage() {
     try {
       console.log('[Dashboard] Loading vaults for:', account.address);
       const ownedVaults = await getOwnedVaults();
+      const activeVaults = ownedVaults.filter((v) => Number(v.balance) > 0);
       console.log('[Dashboard] Found vaults:', ownedVaults);
+      console.log('[Dashboard] Active (balance > 0):', activeVaults);
       
       const now = Date.now();
       
-      const vaultCards: VaultCard[] = ownedVaults.map((v) => {
+      const vaultCards: VaultCard[] = activeVaults.map((v) => {
         const unlockAt = v.lastHeartbeat + v.unlockTimeMs;
         const timeRemaining = Math.max(0, unlockAt - now);
         
@@ -68,6 +75,17 @@ export function DashboardPage() {
       console.error('[Dashboard] Failed to load vaults:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyId = async (vaultId: string) => {
+    try {
+      await navigator.clipboard.writeText(vaultId);
+      setCopiedId(vaultId);
+      setTimeout(() => setCopiedId(null), 1500);
+    } catch (error) {
+      console.error('Failed to copy vault id:', error);
+      alert('Could not copy vault ID. Please copy manually.');
     }
   };
 
@@ -112,6 +130,21 @@ export function DashboardPage() {
     setRefreshing(true);
     await loadVaults();
     setRefreshing(false);
+  };
+
+  const handleCancel = async (vaultId: string) => {
+    setCancelLoading(vaultId);
+    try {
+      await cancelLegacy(vaultId);
+      alert('Vault deleted and funds returned');
+      await loadVaults();
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to cancel vault:', error);
+      alert('Failed to cancel vault');
+    } finally {
+      setCancelLoading(null);
+    }
   };
 
   const formatTimeRemaining = (ms: number): string => {
@@ -287,8 +320,16 @@ export function DashboardPage() {
                       }`}>
                         <Shield className={`w-5 h-5 ${vault.isExpired ? 'text-red-500' : 'text-sui-primary'}`} />
                       </div>
-                      <div>
-                        <p className="text-white font-mono text-sm">{vault.id.slice(0, 16)}...</p>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-white font-mono text-sm">{vault.id.slice(0, 16)}...</p>
+                          <button
+                            onClick={() => handleCopyId(vault.id)}
+                            className="btn-secondary px-2 py-1 text-xs"
+                          >
+                            {copiedId === vault.id ? 'Copied!' : 'Copy ID'}
+                          </button>
+                        </div>
                         <p className="text-gray-500 text-xs">
                           Heir: {vault.beneficiary.slice(0, 12)}...
                         </p>
@@ -315,6 +356,7 @@ export function DashboardPage() {
                     </div>
                   </div>
 
+                  <div className="flex gap-3 flex-wrap">
                   <button
                     onClick={() => handleHeartbeat(vault.id)}
                     disabled={heartbeatLoading === vault.id}
@@ -333,6 +375,24 @@ export function DashboardPage() {
                       </>
                     )}
                   </button>
+
+                    {!vault.isExpired && (
+                      <button
+                        onClick={() => handleCancel(vault.id)}
+                        disabled={cancelLoading === vault.id}
+                        className="btn bg-red-600/20 text-red-400 hover:bg-red-600/30 px-4 py-2"
+                      >
+                        {cancelLoading === vault.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Trash2 className="w-4 h-4" />
+                            Cancel & Withdraw
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {vault.isExpired && (

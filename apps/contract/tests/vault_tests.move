@@ -1,12 +1,12 @@
-/// Tests for the SuiLegacy Vault Module
+/// Tests for the Heritage Vault Module
 #[test_only]
-module suilegacy::vault_tests {
+module heritage::vault_tests {
     use sui::test_scenario::{Self as ts, Scenario};
     use sui::clock::{Self, Clock};
     use sui::coin;
     use sui::sui::SUI;
     use std::string;
-    use suilegacy::vault::{Self, LegacyBox};
+    use heritage::vault::{Self, LegacyBox};
 
     // Test addresses
     const OWNER: address = @0xA;

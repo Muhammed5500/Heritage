@@ -1,4 +1,4 @@
-# SuiLegacy Smart Contract
+# Heritage Smart Contract
 
 Sui Move smart contract for the decentralized dead man's switch protocol.
 
