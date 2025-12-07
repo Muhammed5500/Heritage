@@ -38,8 +38,8 @@ class WalrusClient {
   }
 
   async readBlob(blobId: string): Promise<string> {
-    const url = `${this.AGGREGATOR}/v1/blobs/${blobId}`;
     try {
+      const url = `${this.AGGREGATOR}/v1/${blobId}`;
       const response = await axios.get(url, {
         timeout: 30000,
         responseType: 'text',
@@ -48,8 +48,7 @@ class WalrusClient {
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response?.status === 404) {
-          const requestedUrl = error.config?.url || url;
-          throw new Error(`Blob not found at ${requestedUrl}`);
+          throw new Error(`Blob not found: ${blobId}`);
         }
         const msg = `Walrus read failed: ${error.message} (${error.response?.status || 'no status'})`;
         if (error.response?.data) {
@@ -63,7 +62,6 @@ class WalrusClient {
 }
 
 export const walrusClient = new WalrusClient();
-
 
 
 
