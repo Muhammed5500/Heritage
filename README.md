@@ -1,123 +1,123 @@
 # Heritage · Decentralized Dead Man’s Switch on Sui
 
-Heritage, sahibinin belirli bir süre “heartbeat” göndermemesi durumunda mirası (SUI fonu + şifreli gizli içerik) güvenli biçimde varise aktaran, Sui üstünde çalışan bir çözüm.
+Heritage is a Sui-based solution that transfers a legacy (SUI funds + encrypted secret) to the designated heir if the owner stops sending “heartbeats” for a set period.
 
-## İçindekiler
-- [Mimari](#mimari)
-- [Özellikler](#özellikler)
-- [Ön Koşullar](#ön-koşullar)
-- [Kurulum ve Çalıştırma](#kurulum-ve-çalıştırma)
-- [Ortam Değişkenleri](#ortam-değişkenleri)
-- [Frontend Komutları](#frontend-komutları)
-- [Akışlar](#akışlar)
-- [Sui Move Akıllı Kontratı](#sui-move-akıllı-kontratı)
-- [Depolama (Walrus)](#depolama-walrus)
-- [Güvenlik Notları](#güvenlik-notları)
-- [Lisans](#lisans)
+## Table of Contents
+- [Architecture](#architecture)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Setup & Run](#setup--run)
+- [Environment Variables](#environment-variables)
+- [Frontend Commands](#frontend-commands)
+- [Flows](#flows)
+- [Sui Move Smart Contract](#sui-move-smart-contract)
+- [Storage (Walrus)](#storage-walrus)
+- [Security Notes](#security-notes)
+- [License](#license)
 
-## Mimari
+## Architecture
 ```
 heritage/
 ├── apps/
-│   ├── contract/      # Sui Move akıllı kontratı
+│   ├── contract/      # Sui Move smart contract
 │   └── web/           # React + Vite frontend
-├── packages/tsconfig/ # Paylaşılan TS ayarları
-└── package.json       # Kök script’ler
+├── packages/tsconfig/ # Shared TS configs
+└── package.json       # Root scripts
 ```
 
 - Frontend: React, TypeScript, Vite, Tailwind.
 - Blockchain: Sui Move.
-- Depolama: Walrus (blob upload/download).
-- Kripto: Shamir’s Secret Sharing (5-3), NaCl tabanlı şifreleme.
+- Storage: Walrus (blob upload/download).
+- Crypto: Shamir’s Secret Sharing (5-3), NaCl-based encryption.
 
-## Özellikler
-- Legacy oluşturma: Miras bırakacak kişi, sırrını AES ile şifreler, anahtarı 5 parçaya (5-3 şeması) böler.
-- Walrus entegrasyonu: Şifreli payload ve paylar Walrus’a yüklenir; zincire yalnızca kullanışsız tekil paylar + referanslar gider.
-- Heartbeat (I’m Alive): Süre dolmadan sahip “I’m Alive” göndererek kilidi yeniler.
-- Claim akışı: Süre dolunca varis, pay + saklanan paylar ile sırrı çözer.
-- SuiNS desteği: Beneficiary alanı `.sui` / `.sol` isimlerini otomatik adrese çözer (useSuiClient.resolveNameServiceAddress).
-- Doğrudan RPC: Testnet için varsayılan `https://fullnode.testnet.sui.io:443` kullanılır, proxy yok.
+## Features
+- Legacy creation: Owner encrypts the secret with AES, splits the key into 5 shares (5-3).
+- Walrus integration: Encrypted payload and shares stored on Walrus; on-chain only unusable single shares + references.
+- Heartbeat (“I’m Alive”): Owner refreshes lock before timeout.
+- Claim flow: After timeout, heir combines shares to decrypt the secret.
+- SuiNS support: Beneficiary field resolves `.sui` / `.sol` names automatically (`useSuiClient.resolveNameServiceAddress`).
+- Direct RPC: Testnet uses `https://fullnode.testnet.sui.io:443` by default (no proxy).
 
-## Ön Koşullar
+## Prerequisites
 - Node.js ≥ 18
-- npm (repo `package-lock.json` kullanıyor)
-- Sui CLI (kontrat derleme/test için)
+- npm (repo uses `package-lock.json`)
+- Sui CLI (for contract build/test)
 
-## Kurulum ve Çalıştırma
-Kökten çalıştırın:
+## Setup & Run
+From repo root:
 ```bash
-# Bağımlılıkları yükle
+# Install deps
 npm install
 
-# Geliştirme (frontend)
+# Frontend dev
 npm run dev
 
 # Frontend build
 npm run build
 ```
 
-## Ortam Değişkenleri
-Frontend (`apps/web`) için `.env.local` örneği:
+## Environment Variables
+For frontend (`apps/web`) in `.env.local`:
 ```
-# Opsiyonel: özel RPC, yoksa public testnet kullanılır
+# Optional: custom RPC, else public testnet is used
 VITE_SUI_RPC_URL=https://fullnode.testnet.sui.io:443
 
-# Opsiyonel: paket ID override
+# Optional: package ID overrides
 VITE_PACKAGE_ID_TESTNET=0x...
 VITE_PACKAGE_ID_MAINNET=0x...
 VITE_PACKAGE_ID_DEVNET=0x...
 
-# Opsiyonel: Walrus aggregator override
+# Optional: Walrus aggregator override
 VITE_WALRUS_AGGREGATOR_URL=https://...
 ```
 
-## Frontend Komutları
-(Kökten veya `apps/web` içinde)
+## Frontend Commands
+(From root or within `apps/web`)
 ```bash
 npm run dev      # Vite dev server
 npm run build    # tsc -b && vite build
 npm run lint     # eslint .
 ```
 
-## Akışlar
+## Flows
 
-### 1) Legacy Oluşturma (`CreateLegacyPage.tsx`)
-- AES anahtarı üretilir, secret şifrelenir.
-- Anahtar 5 paya bölünür (5-3).
-- Pay 2 Walrus’a yedek olarak yüklenir; 3,4,5 varisin public key’iyle şifrelenip zincire yazılır.
-- Walrus blob ID’leri ve kilit süresiyle kontratta Legacy Box oluşturulur.
-- Beneficiary alanı SuiNS adı girildiğinde otomatik adrese çözülür.
+### 1) Create Legacy (`CreateLegacyPage.tsx`)
+- Generate AES key, encrypt secret.
+- Split key into 5 shares (5-3).
+- Upload Share 2 to Walrus as backup; shares 3,4,5 encrypted with heir public key and stored on-chain.
+- Create Legacy Box on-chain with Walrus blob IDs and unlock period.
+- Beneficiary SuiNS names resolve automatically.
 
 ### 2) Heartbeat / Dashboard (`DashboardPage.tsx`)
-- Sahip mevcut legacy’leri listeler, “Refresh” ile yeniler.
-- “I’m Alive” (heartbeat) göndererek kilidi sıfırlar.
-- Gerekirse “Cancel & Withdraw” ile kasayı kapatır.
+- Owner lists legacies, refreshes data.
+- Sends “I’m Alive” heartbeat to reset the lock.
+- Can “Cancel & Withdraw” if needed.
 
-### 3) Claim ve Şifre Çözme (`ClaimPage.tsx`)
-- Varis, vault ID ile arama yapar; süre dolduysa claim eder.
-- Heir Share + Walrus’tan pay + zincirdeki şifreli paylarla sır çözülür.
-- Kasa varisin public key’iyle şifrelendiyse, varisin ilgili private key’i girilmelidir; demo anahtar senaryosunda tarayıcıdaki kayıt kullanılır.
+### 3) Claim & Decrypt (`ClaimPage.tsx`)
+- Heir searches by vault ID; if unlocked, claims.
+- Decrypts with Heir Share + Walrus share + on-chain encrypted shares.
+- If encrypted with heir’s public key, heir must provide the matching private key; demo-key flows use the stored demo secret when available.
 
-## Sui Move Akıllı Kontratı (`apps/contract`)
-- Ana obje: LegacyBox
-- Alanlar: owner, beneficiary, unlock_time_ms, last_heartbeat, encrypted_blob_id, locked_shares, balance.
-- Giriş fonksiyonları: `create_legacy`, `im_alive`, `claim_legacy`, `add_funds`.
-- Komutlar (apps/contract içinde):
+## Sui Move Smart Contract (`apps/contract`)
+- Main object: LegacyBox
+- Fields: owner, beneficiary, unlock_time_ms, last_heartbeat, encrypted_blob_id, locked_shares, balance.
+- Entry functions: `create_legacy`, `im_alive`, `claim_legacy`, `add_funds`.
+- Commands (inside `apps/contract`):
 ```bash
 npm run build   # Sui Move build
-npm run test    # Move testleri
+npm run test    # Move tests
 ```
 
-## Depolama (Walrus)
-- Basit SDK (`apps/web/src/services/walrus-sdk.ts`): Aggregator GET `.../v1/blobs/{blobId}`, Publisher PUT `.../v1/blobs?epochs=1` (varsayılan).
-- Gelişmiş entegrasyon (`apps/web/src/services/walrus.ts`): CDN’den Walrus SDK yükler, upload relay + birden çok aggregator fallback’i kullanır, varsayılan `DEFAULT_EPOCHS = 5`.
-- WASM, jsDelivr CDN’den yüklenir; `@mysten/walrus-wasm` npm paketi kullanılmaz.
+## Storage (Walrus)
+- Simple SDK (`apps/web/src/services/walrus-sdk.ts`): Aggregator GET `.../v1/blobs/{blobId}`, Publisher PUT `.../v1/blobs?epochs=1` (default).
+- Advanced integration (`apps/web/src/services/walrus.ts`): Loads Walrus SDK from CDN, uses upload relay + multiple aggregator fallbacks, `DEFAULT_EPOCHS = 5`.
+- WASM fetched from jsDelivr; `@mysten/walrus-wasm` npm package is not used.
 
-## Güvenlik Notları
-- Şifreleme tamamen istemci tarafında; sır düz metin olarak sunucuya gitmez.
-- Shamir 5-3 şeması: tekil paylar tek başına işe yaramaz.
-- Varis public key’iyle şifreleme yapıldıysa, çözüm için ilgili private key zorunludur.
-- RPC olarak public testnet/fullnode kullanılır; proxy gerekmez.
+## Security Notes
+- Fully client-side encryption; secrets never sent in plaintext.
+- Shamir 5-3: single shares are useless alone.
+- If encrypted with heir’s public key, the matching private key is required to decrypt.
+- Public testnet/fullnode RPC used; no proxy required.
 
-## Lisans
+## License
 MIT
