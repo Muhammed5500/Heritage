@@ -16,11 +16,11 @@ const queryClient = new QueryClient({
   },
 });
 
-// Network configurations
+// Network configurations (no local proxy; use public RPC as fallback)
+const publicTestnetRpc = 'https://fullnode.testnet.sui.io:443';
 const networks = {
   devnet: { url: getFullnodeUrl('devnet') },
-  // Use local proxy to bypass CORS in dev
-  testnet: { url: `${window.location.origin}/sui-proxy` },
+  testnet: { url: import.meta.env.VITE_SUI_RPC_URL || publicTestnetRpc },
   mainnet: { url: getFullnodeUrl('mainnet') },
 };
 
