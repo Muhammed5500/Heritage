@@ -469,7 +469,7 @@ export function ClaimPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Your Secret Key (Optional)
+                  Your Secret Key
                 </label>
                 <div className="relative">
                   <input

@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useCurrentAccount } from '@mysten/dapp-kit';
+import { useCurrentAccount, useSuiClient } from '@mysten/dapp-kit';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Shield, 
@@ -38,10 +38,14 @@ interface ProcessingStep {
 
 export function CreateLegacyPage() {
   const account = useCurrentAccount();
+  const client = useSuiClient();
   const { createVault, packageId } = useLegacyContract();
 
   // Form state
   const [beneficiary, setBeneficiary] = useState('');
+  const [resolvedAddress, setResolvedAddress] = useState<string | null>(null);
+  const [resolveError, setResolveError] = useState<string | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
   const [secretNote, setSecretNote] = useState('');
   const [unlockDays, setUnlockDays] = useState('30');
   const [unlockHours, setUnlockHours] = useState('0');
@@ -164,6 +168,41 @@ export function CreateLegacyPage() {
     }
   };
 
+  const handleResolveBeneficiary = async () => {
+    const value = beneficiary.trim();
+    setResolveError(null);
+    setResolvedAddress(null);
+
+    if (!value) return;
+
+    // If already a hex address, accept as-is
+    if (value.startsWith('0x')) {
+      setResolvedAddress(value);
+      return;
+    }
+
+    const lower = value.toLowerCase();
+    if (!lower.endsWith('.sui') && !lower.endsWith('.sol')) {
+      return;
+    }
+
+    try {
+      setIsResolving(true);
+      const address = await client.resolveNameServiceAddress({ name: value });
+      if (address) {
+        setBeneficiary(address);
+        setResolvedAddress(address);
+      } else {
+        setResolveError('Name not found');
+      }
+    } catch (e) {
+      console.error('Failed to resolve SuiNS name', e);
+      setResolveError('Name not found');
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -251,12 +290,26 @@ export function CreateLegacyPage() {
                   type="text"
                   value={beneficiary}
                   onChange={(e) => setBeneficiary(e.target.value)}
+                  onBlur={handleResolveBeneficiary}
                   placeholder="0x..."
                   className="input font-mono"
                 />
-                <p className="text-xs text-gray-500 mt-2">
-                  The Sui address of your heir who will receive the inheritance.
-                </p>
+                <div className="mt-2 space-y-1">
+                  <p className="text-xs text-gray-500">
+                    The Sui address of your heir who will receive the inheritance. You can enter a SuiNS name (e.g. example.sui).
+                  </p>
+                  {isResolving && (
+                    <p className="text-xs text-gray-400">Resolving name...</p>
+                  )}
+                  {resolvedAddress && (
+                    <p className="text-xs text-green-400">
+                      Resolved Address: {resolvedAddress.slice(0, 10)}...{resolvedAddress.slice(-6)}
+                    </p>
+                  )}
+                  {resolveError && (
+                    <p className="text-xs text-red-400">{resolveError}</p>
+                  )}
+                </div>
               </div>
 
               <div>
