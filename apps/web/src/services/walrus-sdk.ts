@@ -39,7 +39,7 @@ class WalrusClient {
 
   async readBlob(blobId: string): Promise<string> {
     try {
-      const url = `${this.AGGREGATOR}/v1/${blobId}`;
+      const url = `${this.AGGREGATOR}/v1/blobs/${blobId}`;
       const response = await axios.get(url, {
         timeout: 30000,
         responseType: 'text',
