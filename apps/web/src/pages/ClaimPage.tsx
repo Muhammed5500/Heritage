@@ -456,7 +456,7 @@ export function ClaimPage() {
             <div className="card space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Your Heir Share (Share 1)
+                  Your Heir Share
                 </label>
                 <textarea
                   value={heirShare}
