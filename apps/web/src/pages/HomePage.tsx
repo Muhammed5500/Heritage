@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Shield, Lock, Clock, Users, ArrowRight, Sparkles } from 'lucide-react'
+import SecretSharingFlow from '@/components/SecretSharingFlow'
 
 const features = [
   {
@@ -91,21 +92,35 @@ export function HomePage() {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white mb-4">How It Works</h2>
           <p className="text-gray-400 max-w-xl mx-auto">
-            Plain steps your heir can follow—no crypto jargon needed.
+            Your secret is split into 5 shares. Any 3 can reconstruct it, but no single party can access it alone.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-4">
+        {/* Neural Tree Visualization */}
+        <SecretSharingFlow />
+
+        {/* Simple explanation cards */}
+        <div className="mt-20 max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h3 className="text-xl font-semibold text-white mb-3">Simple 4-Step Process</h3>
+            <p className="text-gray-400 text-sm">No technical knowledge required</p>
+          </div>
+
+          <div className="relative">
+            {/* Progress Line */}
+            <div className="absolute top-8 left-0 right-0 h-0.5 bg-gradient-to-r from-sui-primary/20 via-sui-primary/40 to-sui-primary/20 hidden md:block"></div>
+            
+            <div className="grid md:grid-cols-4 gap-8 md:gap-4">
           {[
             {
               icon: Sparkles,
               title: 'Create',
-              desc: 'Type your secret, pick an unlock timer, and set the heir address or SuiNS name.',
+              desc: 'Enter your secret message and set when your heir should receive it',
             },
             {
               icon: Shield,
-              title: 'Protect',
-              desc: 'We encrypt in your browser and split it into pieces; a safe backup lives on Walrus.',
+              title: 'Secure',
+              desc: 'Your secret gets encrypted and split into 5 pieces automatically',
             },
             {
               icon: Clock,
@@ -114,23 +129,66 @@ export function HomePage() {
             },
             {
               icon: Users,
-              title: 'Claim',
-              desc: 'When the timer ends, the heir claims, pastes their share, and the app reunites the secret.',
+              title: 'Inherit',
+              desc: 'Your heir automatically gains access when the timer expires',
             },
           ].map((step, i) => {
-            const Icon = step.icon
+            const Icon = step.icon;
             return (
-              <div key={step.title} className="card text-left space-y-3 animate-fade-in" style={{ animationDelay: `${(i + 1) * 100}ms` }}>
-                <div className="w-10 h-10 rounded-full bg-sui-primary/10 flex items-center justify-center">
-                  <Icon className="w-5 h-5 text-sui-primary" />
+              <div 
+                key={step.title} 
+                className="relative group animate-fade-in" 
+                style={{ animationDelay: `${(i + 1) * 150}ms` }}
+              >
+                {/* Step Number Circle */}
+                <div className="relative z-10 w-16 h-16 mx-auto mb-6 rounded-full bg-black border-2 border-gray-700 flex items-center justify-center group-hover:border-sui-primary/50 transition-colors duration-300">
+                  <Icon className="w-6 h-6 text-sui-primary group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-sui-primary text-black text-xs font-bold flex items-center justify-center">
+                    0{i + 1}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-white font-semibold">{step.title}</p>
-                  <p className="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
+
+                {/* Content Card */}
+                <div className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-6 group-hover:border-sui-primary/30 transition-all duration-300 group-hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.2)]">
+                  <h4 className="text-lg font-semibold text-white mb-3 group-hover:text-sui-primary transition-colors">
+                    {step.title}
+                  </h4>
+                  <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                    {step.desc}
+                  </p>
+                  
+                  {/* Action Indicator */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-sui-primary/20 text-sui-primary">
+                      {i === 0 ? 'Start Here →' : i === 3 ? 'Auto-Complete ✓' : 'In Progress...'}
+                    </span>
+                    {i < 3 && (
+                      <div className="hidden md:flex items-center text-gray-600">
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    )}
+                  </div>
                 </div>
+
+                {/* Connection Line (Mobile) */}
+                {i < 3 && (
+                  <div className="md:hidden flex justify-center mt-6 mb-2">
+                    <div className="w-0.5 h-8 bg-gradient-to-b from-sui-primary/40 to-transparent"></div>
+                  </div>
+                )}
               </div>
-            )
+            );
           })}
+            </div>
+
+            {/* Call to Action */}
+            <div className="text-center mt-12">
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-sui-primary/10 border border-sui-primary/20 rounded-full">
+                <div className="w-2 h-2 bg-sui-primary rounded-full animate-pulse"></div>
+                <span className="text-sui-primary text-sm font-medium">Ready to secure your digital legacy?</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
