@@ -5,6 +5,7 @@ Heritage is a Sui-based solution that transfers a legacy (SUI funds + encrypted 
 ## Table of Contents
 - [Architecture](#architecture)
 - [Features](#features)
+- [How It Works](#how-it-works)
 - [Prerequisites](#prerequisites)
 - [Setup & Run](#setup--run)
 - [Environment Variables](#environment-variables)
@@ -37,6 +38,12 @@ heritage/
 - Claim flow: After timeout, heir combines shares to decrypt the secret.
 - SuiNS support: Beneficiary field resolves `.sui` / `.sol` names automatically (`useSuiClient.resolveNameServiceAddress`).
 - Direct RPC: Testnet uses `https://fullnode.testnet.sui.io:443` by default (no proxy).
+
+## How It Works
+- Create: Owner types a secret, picks an unlock timer, sets the heir address (or SuiNS name).
+- Protect: The secret is encrypted in the browser and sliced into pieces; a harmless backup piece is stored on Walrus, the rest are locked to the heir.
+- Stay alive: Owner clicks “I’m Alive” in the dashboard to keep the vault locked.
+- Claim: When the timer expires, the heir claims on-chain and pastes their share; the app reunites the pieces and shows the decrypted secret.
 
 ## Prerequisites
 - Node.js ≥ 18

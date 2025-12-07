@@ -91,33 +91,46 @@ export function HomePage() {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-white mb-4">How It Works</h2>
           <p className="text-gray-400 max-w-xl mx-auto">
-            Your secret is split into 5 shares. Any 3 can reconstruct it, but no single party 
-            can access it alone.
+            Plain steps your heir can follow—no crypto jargon needed.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-5 gap-4">
+        <div className="grid md:grid-cols-4 gap-4">
           {[
-            { label: 'Share 1', location: 'Heir (Direct)', color: 'from-green-500 to-emerald-500' },
-            { label: 'Share 2', location: 'Walrus Storage', color: 'from-blue-500 to-cyan-500' },
-            { label: 'Share 3', location: 'Smart Contract', color: 'from-purple-500 to-violet-500' },
-            { label: 'Share 4', location: 'Smart Contract', color: 'from-purple-500 to-violet-500' },
-            { label: 'Share 5', location: 'Smart Contract', color: 'from-purple-500 to-violet-500' },
-          ].map((share, i) => (
-            <div key={i} className="card text-center">
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${share.color} mx-auto mb-3 flex items-center justify-center text-white font-bold text-sm`}>
-                {i + 1}
+            {
+              icon: Sparkles,
+              title: 'Create',
+              desc: 'Type your secret, pick an unlock timer, and set the heir address or SuiNS name.',
+            },
+            {
+              icon: Shield,
+              title: 'Protect',
+              desc: 'We encrypt in your browser and split it into pieces; a safe backup lives on Walrus.',
+            },
+            {
+              icon: Clock,
+              title: "Stay Alive",
+              desc: 'Tap “I’m Alive” in the dashboard to keep the vault locked while you are active.',
+            },
+            {
+              icon: Users,
+              title: 'Claim',
+              desc: 'When the timer ends, the heir claims, pastes their share, and the app reunites the secret.',
+            },
+          ].map((step, i) => {
+            const Icon = step.icon
+            return (
+              <div key={step.title} className="card text-left space-y-3 animate-fade-in" style={{ animationDelay: `${(i + 1) * 100}ms` }}>
+                <div className="w-10 h-10 rounded-full bg-sui-primary/10 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-sui-primary" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold">{step.title}</p>
+                  <p className="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
+                </div>
               </div>
-              <p className="text-white font-medium text-sm">{share.label}</p>
-              <p className="text-gray-500 text-xs mt-1">{share.location}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="card bg-gradient-to-r from-sui-primary/5 to-purple-500/5 border-sui-primary/20 text-center">
-          <p className="text-sui-primary font-medium">
-            🔐 Shares 3, 4, 5 are encrypted with your heir's public key before storage
-          </p>
+            )
+          })}
         </div>
       </section>
     </div>
