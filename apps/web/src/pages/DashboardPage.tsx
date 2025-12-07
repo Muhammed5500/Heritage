@@ -16,7 +16,6 @@ import {
   AlertTriangle,
   RefreshCw,
   Trash2,
-  Copy,
 } from 'lucide-react';
 import { useLegacyContract } from '@/hooks/useLegacyContract';
 import { Link, useNavigate } from 'react-router-dom';
